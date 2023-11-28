@@ -4,6 +4,7 @@ import com.student.base.model.PageParams;
 import com.student.base.model.PageResult;
 import com.student.content.model.dto.AddCourseDto;
 import com.student.content.model.dto.CourseBaseInfoDto;
+import com.student.content.model.dto.EditCourseDto;
 import com.student.content.model.dto.QueryCourseParamsDto;
 import com.student.content.model.po.CourseBase;
 
@@ -23,5 +24,26 @@ public interface CourseBaseInfoService {
      */
     PageResult<CourseBase> queryCourseBaseList(PageParams pageParams, QueryCourseParamsDto queryCourseParamsDto);
 
+    /**
+     * 创建课程
+     * @param companyId
+     * @param addCourseDto
+     * @return
+     */
     CourseBaseInfoDto createCourseBase(Long companyId, AddCourseDto addCourseDto);
+
+    /**
+     * courseId查询课程
+     * @param courseId
+     * @return
+     */
+    CourseBaseInfoDto getCourseBaseInfo(long courseId);
+
+    /**
+     * 修改课程
+     * @param companyId
+     * @param dto
+     * @return
+     */
+    CourseBaseInfoDto updateCourseBase(Long companyId, EditCourseDto dto);
 }

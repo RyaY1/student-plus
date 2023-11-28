@@ -2,6 +2,7 @@ package com.student.content.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.student.base.execption.StudentPlusException;
 import com.student.base.model.PageParams;
 import com.student.base.model.PageResult;
 import com.student.content.mapper.CourseBaseMapper;
@@ -9,6 +10,7 @@ import com.student.content.mapper.CourseCategoryMapper;
 import com.student.content.mapper.CourseMarketMapper;
 import com.student.content.model.dto.AddCourseDto;
 import com.student.content.model.dto.CourseBaseInfoDto;
+import com.student.content.model.dto.EditCourseDto;
 import com.student.content.model.dto.QueryCourseParamsDto;
 import com.student.content.model.po.CourseBase;
 import com.student.content.model.po.CourseCategory;
@@ -18,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -55,6 +58,7 @@ public class CourseBaseInfoServiceImpl implements CourseBaseInfoService {
     }
 
 
+    @Transactional
     @Override
     public CourseBaseInfoDto createCourseBase(Long companyId, AddCourseDto dto) {
         //合法性校验
@@ -163,6 +167,37 @@ public class CourseBaseInfoServiceImpl implements CourseBaseInfoService {
 
         return courseBaseInfoDto;
 
+    }
+
+    @Transactional
+    @Override
+    public CourseBaseInfoDto updateCourseBase(Long companyId, EditCourseDto dto) {
+        //课程id
+        Long courseId = dto.getId();
+        CourseBase courseBase = courseBaseMapper.selectById(courseId);
+        if(courseBase==null){
+            StudentPlusException.cast("课程不存在");
+        }
+
+        //校验本机构只能修改本机构的课程
+        if(!courseBase.getCompanyId().equals(companyId)){
+            StudentPlusException.cast("本机构只能修改本机构的课程");
+        }
+
+        //封装基本信息的数据
+        BeanUtils.copyProperties(dto,courseBase);
+        courseBase.setChangeDate(LocalDateTime.now());
+
+        //更新课程基本信息
+        int i = courseBaseMapper.updateById(courseBase);
+
+        //封装营销信息的数据
+        CourseMarket courseMarket = new CourseMarket();
+        BeanUtils.copyProperties(dto,courseMarket);
+        saveCourseMarket(courseMarket);
+        //查询课程信息
+        CourseBaseInfoDto courseBaseInfo = this.getCourseBaseInfo(courseId);
+        return courseBaseInfo;
     }
 
 }
